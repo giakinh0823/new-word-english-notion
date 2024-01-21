@@ -73,9 +73,9 @@ const updatePage = async (pageId, data, retries = 0) => {
                     "rich_text": [
                         {
                             "text": {
-                                "content": "ERROR: Không tìm thấy từ mới. Xin vui lòng thử lại!"
+                                "content": "ERROR: Đã có lỗi xảy ra. Xin vui lòng thử lại!"
                             },
-                            "plain_text": "ERROR: Không tìm thấy từ mới. Xin vui lòng thử lại!",
+                            "plain_text": "ERROR: Đã có lỗi xảy ra. Xin vui lòng thử lại!",
                             "annotations": {
                                 "bold": true,
                                 "italic": false,
@@ -238,11 +238,14 @@ const fillValuesNewWords = async () => {
         const page = datas.results[index];
         const id = page.id;
         map[id] = index;
-        if(page?.properties?.English?.title[0]?.text?.content){
-            mapWord[page.properties.English.title[0].text.content.toLowerCase()] = index;
+        if(page?.properties?.English?.title[0]?.text?.content 
+            && page?.properties?.Sound?.rich_text[0]?.text?.content
+            && page?.properties?.URL?.url
+            && page?.properties?.Vietnamese?.rich_text[0]?.text?.content){
+            mapWord[page.properties.English.title[0].text.content.toLowerCase()] = page.properties.Vietnamese.rich_text[0].text.content;
         }
     }
-
+    
     const results = await filterNewWord(databaseId);
 
     if (!results || results.length == 0) {
@@ -255,6 +258,7 @@ const fillValuesNewWords = async () => {
             const word = title[0].text.content;
 
             if(word && word.trim() != "" && mapWord[word.trim().toLowerCase()] && mapWord[word.trim().toLowerCase()] != ""){
+                console.log("Từ mới đã có sẵn: ", word)
                 const value = {
                     "Vietnamese": {
                         "rich_text": [
@@ -281,9 +285,34 @@ const fillValuesNewWords = async () => {
             }
 
             const searchRes = await searchDictionaryEnglish(word);
-            if (!searchRes) {
+            if (!searchRes || !searchRes?.type || !searchRes?.translations || !searchRes?.sound) {
+                console.log("Không tìm thấy từ mới ", word)
+                const value = {
+                    "Vietnamese": {
+                        "rich_text": [
+                            {
+                                "text": {
+                                    "content": "ERROR: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!"
+                                },
+                                "plain_text": "ERROR: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!",
+                                "annotations": {
+                                    "bold": true,
+                                    "italic": false,
+                                    "strikethrough": false,
+                                    "underline": false,
+                                    "code": true,
+                                    "color": "orange"
+                                },
+                            }
+                        ]
+                    },
+                }
+
+                await updatePage(element.id, value);
                 return;
             }
+
+
             const type = searchRes?.type?.map(item => {
                 return {
                     "name": item
