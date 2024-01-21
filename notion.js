@@ -324,4 +324,42 @@ const fillValuesNewWords = async () => {
     });
 }
 
-module.exports = { fillValuesNewWords }
+
+const findAllNewWord = async () => {
+    const databaseId = process.env.DATABASE_ID;
+    const databaseRes = await getDatabase(databaseId);
+
+    if (!databaseRes || !databaseRes?.id) {
+        return;
+    }
+
+    const datas = await findAllDatabase(databaseId);
+    if (!datas || !datas?.results || datas?.results?.length == 0) {
+        return;
+    }
+
+    return datas.results.map(item => {
+        if(!item?.properties){
+            return;
+        }
+        console.log(item?.properties);
+        const properties = item?.properties;
+
+        if(!properties?.English?.title[0]?.plain_text || 
+            !properties?.Vietnamese?.rich_text[0]?.plain_text || 
+            !properties?.Sound?.rich_text[0]?.plain_text){
+            return;
+        }
+        return {
+            "english": properties.English.title[0].plain_text,
+            "vietnamese": properties.Vietnamese?.rich_text[0].plain_text,
+            "sound": properties.Sound.rich_text[0].plain_text,
+            "type": properties?.multi_select?.map(item => item.name).join(", "),
+            "url": properties?.URL?.url,
+            "band": properties?.Band?.select?.name,
+            "unit": properties?.Unit?.select?.name
+        }
+    }).filter(item => item)   
+}
+
+module.exports = { fillValuesNewWords, findAllNewWord }
