@@ -277,6 +277,7 @@ const fillValuesNewWords = async () => {
                 }
 
                 await updatePage(element.id, value);
+                return;
             }
 
             const searchRes = await searchDictionaryEnglish(word);
