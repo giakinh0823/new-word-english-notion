@@ -233,10 +233,14 @@ const fillValuesNewWords = async () => {
     }
 
     let map = {};
+    let mapWord = {};
     for (let index = 0; index < datas.results.length; index++) {
         const page = datas.results[index];
         const id = page.id;
         map[id] = index;
+        if(page?.properties?.English?.title[0]?.text?.content){
+            mapWord[page.properties.English.title[0].text.content.toLowerCase()] = index;
+        }
     }
 
     const results = await filterNewWord(databaseId);
@@ -249,6 +253,32 @@ const fillValuesNewWords = async () => {
         const title = element?.properties?.English?.title;
         if (title && title.length > 0) {
             const word = title[0].text.content;
+
+            if(mapWord[word.toLowerCase()]){
+                const value = {
+                    "Vietnamese": {
+                        "rich_text": [
+                            {
+                                "text": {
+                                    "content": "ERROR: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!"
+                                },
+                                "plain_text": "ERROR: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!",
+                                "annotations": {
+                                    "bold": true,
+                                    "italic": false,
+                                    "strikethrough": false,
+                                    "underline": false,
+                                    "code": true,
+                                    "color": "orange"
+                                },
+                            }
+                        ]
+                    },
+                }
+
+                await updatePage(element.id, value);
+            }
+
             const searchRes = await searchDictionaryEnglish(word);
             if (!searchRes) {
                 return;
