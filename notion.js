@@ -254,7 +254,7 @@ const fillValuesNewWords = async () => {
         if (title && title.length > 0) {
             const word = title[0].text.content;
 
-            if(mapWord[word.toLowerCase()]){
+            if(!word && word.trim() === "" && mapWord[word.trim().toLowerCase()] && mapWord[word.trim().toLowerCase()] != ""){
                 const value = {
                     "Vietnamese": {
                         "rich_text": [
