@@ -6,6 +6,8 @@ dotenv.config();
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
+const MAX_RETRIES = 3;
+
 const getDatabase = async (databaseId) => {
     try {
         return response = await notion.databases.retrieve({ database_id: databaseId });
@@ -53,7 +55,7 @@ const filterDatabase = async (databaseId, query, sort) => {
     }
 }
 
-const updatePage = async (pageId, data) => {
+const updatePage = async (pageId, data, retries = 0) => {
     try {
         const response = await notion.pages.update({
             page_id: pageId,
@@ -63,7 +65,34 @@ const updatePage = async (pageId, data) => {
         });
         return response;
     } catch {
-        console.log("error update page: ", pageId, data);
+        console.log("Error update page: ", pageId);
+        if (retries < MAX_RETRIES) {
+            console.log(`Retrying... (${retries + 1}/${MAX_RETRIES})`);
+            const value = {
+                "Vietnamese": {
+                    "rich_text": [
+                        {
+                            "text": {
+                                "content": "ERROR: Không tìm thấy từ mới. Xin vui lòng thử lại!"
+                            },
+                            "plain_text": "ERROR: Không tìm thấy từ mới. Xin vui lòng thử lại!",
+                            "annotations": {
+                                "bold": true,
+                                "italic": false,
+                                "strikethrough": false,
+                                "underline": false,
+                                "code": true,
+                                "color": "red"
+                            },
+                        }
+                    ]
+                },
+            }
+            return updatePage(pageId, value);
+        } else {
+            console.error('Max retries reached. Unable to update page.');
+        }
+        return null;
     }
 }
 
@@ -220,7 +249,6 @@ const fillValuesNewWords = async () => {
         const title = element?.properties?.English?.title;
         if (title && title.length > 0) {
             const word = title[0].text.content;
-            console.log("Start update word: ", word);
             const searchRes = await searchDictionaryEnglish(word);
             if (!searchRes) {
                 return;
@@ -231,8 +259,7 @@ const fillValuesNewWords = async () => {
                 };
             });
             const newData = buildNewData(map[element.id] + 1, searchRes?.translations, searchRes?.sound, searchRes?.url, type); // Fix typo here
-            console.log(newData);
-            updatePage(element.id, newData);
+            await updatePage(element.id, newData);
         }
     });
 }
