@@ -8,33 +8,19 @@ dotenv.config();
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 const channelID = process.env.TELEGRAM_CHANNEL_ID;
 
-bot.command('random_words_english', async (ctx) => {
-    const data = await findAllNewWord();
-    const numWordsToSend = 5;
-    const randomIndices = getRandomIndices(data.length, numWordsToSend);
-
-    randomIndices.forEach((index) => {
-        const randomWord = data[index];
-        if (randomWord?.english && randomWord?.vietnamese && randomWord?.sound) {
-            const message = `${randomWord.english} /${randomWord.sound}/: ${randomWord.vietnamese}`;
-            ctx.reply(message);
-        }
-    });
-
-});
-
 schedule.scheduleJob('0 9 * * *', async () => {
     const data = await findAllNewWord();
     const numWordsToSend = 5;
     const randomIndices = getRandomIndices(data.length, numWordsToSend);
+    let message = '';
+    let i = 0;
     randomIndices.forEach((index) => {
         const randomWord = data[index];
-
         if (randomWord?.english && randomWord?.vietnamese && randomWord?.sound) {
-            const message = `${randomWord.english} /${randomWord.sound}/: ${randomWord.vietnamese}`;
-            bot.telegram.sendMessage(channelID, message);
+            message += `${++i}. ${randomWord.english}: ${randomWord.vietnamese}\n`;
         }
     });
+    bot.telegram.sendMessage(channelID, message);
 });
 
 function getRandomIndices(max, count) {

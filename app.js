@@ -5,12 +5,10 @@ const { bot } = require('./telegram');
 
 const app = express();
 
-const port = 8080; // Cổng mà API sẽ lắng nghe
+const port = 8080; 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
 
 schedule.scheduleJob('*/10 * * * * *', async () => {
     console.log('Scheduled task running...');
@@ -22,13 +20,8 @@ schedule.scheduleJob('*/10 * * * * *', async () => {
     console.log('Scheduled task done...');
 });
 
-app.get('/', (req, res) => {
-    res.send('Hà Gia Kính');
-});
-
+bot.launch();
 
 app.listen(port, () => {
     console.log(`API đang chạy tại http://localhost:${port}`);
 });
-
-bot.launch();
