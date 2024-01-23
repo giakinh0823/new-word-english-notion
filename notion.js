@@ -5,6 +5,10 @@ const { searchDictionaryEnglish } = require('./cambridge');
 dotenv.config();
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const databaseNewWord = process.env.DATABASE_ID_NEW_WORD;
+const databaseSchedular = process.env.DATABASE_ID_SCHEDULAR;
+const band = process.env.BAND
+
 
 const MAX_RETRIES = 3;
 
@@ -17,35 +21,12 @@ const getDatabase = async (databaseId) => {
     }
 }
 
-const findAllDatabase = async (databaseId) => {
+const filterDatabase = async (databaseId, query, sorts) => {
     try {
         const payload = {
             database_id: databaseId,
-            sorts: [
-                {
-                    property: 'Created Time',
-                    direction: 'ascending',
-                },
-            ]
-        }
-        const response = await notion.databases.query(payload);
-        return response;
-    } catch {
-        console.log("error find all database: ", databaseId);
-        return null;
-    }
-}
-
-const filterDatabase = async (databaseId, query, sort) => {
-    try {
-        const payload = {
-            database_id: databaseId,
-            filter: {
-                ...query
-            },
-            sort: [
-                ...sort
-            ]
+            ...query && { filter: query },
+            ...sorts && { sorts: sorts },
         }
         const response = await notion.databases.query(payload);
         return response;
@@ -143,7 +124,7 @@ const filterNewWord = async (databaseId) => {
         },
     ];
 
-    const queryRes = await filterDatabase(databaseId, query, sorts);
+    const queryRes = await filterDatabase(databaseNewWord, query, sorts);
     if (!queryRes || !queryRes?.results) {
         return [];
     }
@@ -154,7 +135,7 @@ const buildNewData = (stt, vietnamese, sound, url, type) => {
     let value = {
         "Band": {
             "select": {
-                "name": process.env.BAND
+                "name": band
             }
         }
     };
@@ -220,14 +201,20 @@ const buildNewData = (stt, vietnamese, sound, url, type) => {
 }
 
 const fillValuesNewWords = async () => {
-    const databaseId = process.env.DATABASE_ID;
-    const databaseRes = await getDatabase(databaseId);
+    const databaseRes = await getDatabase(databaseNewWord);
 
     if (!databaseRes || !databaseRes?.id) {
         return;
     }
 
-    const datas = await findAllDatabase(databaseId);
+    const sort = [
+        {
+            property: 'Created Time',
+            direction: 'ascending',
+        },
+    ]
+
+    const datas = await filterDatabase(databaseNewWord, null, sort);
     if (!datas || !datas?.results || datas?.results?.length == 0) {
         return;
     }
@@ -326,14 +313,20 @@ const fillValuesNewWords = async () => {
 
 
 const findAllNewWord = async () => {
-    const databaseId = process.env.DATABASE_ID;
-    const databaseRes = await getDatabase(databaseId);
+    const databaseRes = await getDatabase(databaseNewWord);
 
     if (!databaseRes || !databaseRes?.id) {
         return;
     }
 
-    const datas = await findAllDatabase(databaseId);
+    const sort = [
+        {
+            property: 'Created Time',
+            direction: 'ascending',
+        },
+    ]
+
+    const datas = await filterDatabase(databaseNewWord, null, sort);
     if (!datas || !datas?.results || datas?.results?.length == 0) {
         return;
     }
@@ -342,7 +335,7 @@ const findAllNewWord = async () => {
         if(!item?.properties){
             return;
         }
-        console.log(item?.properties);
+
         const properties = item?.properties;
 
         if(!properties?.English?.title[0]?.plain_text || 
@@ -362,4 +355,56 @@ const findAllNewWord = async () => {
     }).filter(item => item)   
 }
 
-module.exports = { fillValuesNewWords, findAllNewWord }
+
+const findTodaySchedular = async () => {
+    const databaseRes = await getDatabase(databaseSchedular);
+    if (!databaseRes || !databaseRes?.id) {
+        return;
+    }
+
+    const query = {
+        "and": [
+            {
+                "property": "Date",
+                "date": {
+                    "equals": new Date().toISOString().split('T')[0]
+                }
+            }
+        ]
+    }
+
+    const sorts = [
+        {
+            "property": "Date",
+            "direction": "ascending"
+        }
+    ]
+
+    const datas = await filterDatabase(databaseSchedular, query, sorts);
+    if (!datas || !datas?.results || datas?.results?.length == 0) {
+        return;
+    }
+
+
+    return datas.results.map(item => {
+        if(!item?.properties){
+            return;
+        }
+        const properties = item?.properties;
+
+        if(!properties?.Date?.date?.start || 
+            !properties?.Name?.title[0]?.plain_text){
+            return;
+        }
+
+        return {
+            "start_time": properties?.Date?.date?.start,
+            "end_time": properties?.Date?.date?.end,
+            "name": properties.Name.title[0].plain_text,
+            "note": properties?.Note?.rich_text[0]?.plain_text,
+        }
+    }).filter(item => item)   
+}
+
+
+module.exports = { fillValuesNewWords, findAllNewWord, findTodaySchedular }
