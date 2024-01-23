@@ -23,7 +23,7 @@ schedule.scheduleJob('0 */2 * * *', async () => {
     randomIndices.forEach((index) => {
         const randomWord = data[index];
         if (randomWord?.english && randomWord?.vietnamese && randomWord?.sound) {
-            message += `${++i}. ${randomWord.english}: ${randomWord.vietnamese}\n`;
+            message += `${++i}. ${randomWord.english}: ${randomWord.vietnamese} ✅\n`;
         }
     });
     bot.telegram.sendMessage(channelIdEnglish, message);
@@ -37,13 +37,12 @@ schedule.scheduleJob('0 7 * * *', async () => {
         return;
     }
 
-    let message = '📅 Lịch hôm nay:\n';
+    let message = '📅 Lịch hôm nay ✅\n';
     data.forEach((item) => {
-        const { start_time, end_time, name, note } = item;
-        const [hour, minute] = start_time.split(':');
+        const { start_time, end_time, name } = item;
         message += `📌 ${name}`;
         if(start_time) {
-            message += ` - Thời gian: ${start_time.split('T')[1]?.split('.')[0]}`;
+            message += ` - ⏰: ${start_time.split('T')[1]?.split('.')[0]}`;
         }
         if(end_time) {
             message += ` đến ${end_time.split('T')[1]?.split('.')[0]}`;
