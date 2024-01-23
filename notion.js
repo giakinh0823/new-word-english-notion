@@ -251,9 +251,9 @@ const fillValuesNewWords = async () => {
                         "rich_text": [
                             {
                                 "text": {
-                                    "content": "ERROR: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!"
+                                    "content": "WARNING⚡️: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!"
                                 },
-                                "plain_text": "ERROR: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!",
+                                "plain_text": "WARNING⚡️: Từ mới đã có sẵn. Xin vui lòng kiểm tra lại!",
                                 "annotations": {
                                     "bold": true,
                                     "italic": false,
@@ -279,9 +279,9 @@ const fillValuesNewWords = async () => {
                         "rich_text": [
                             {
                                 "text": {
-                                    "content": "ERROR: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!"
+                                    "content": "ERROR🔥: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!"
                                 },
-                                "plain_text": "ERROR: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!",
+                                "plain_text": "ERROR🔥: Không tìm thấy từ mới. Xin vui lòng kiểm tra lại!",
                                 "annotations": {
                                     "bold": true,
                                     "italic": false,
