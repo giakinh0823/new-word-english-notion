@@ -233,7 +233,7 @@ const fillValuesNewWords = async () => {
         }
     }
     
-    const results = await filterNewWord(databaseId);
+    const results = await filterNewWord(databaseNewWord);
 
     if (!results || results.length == 0) {
         return;
