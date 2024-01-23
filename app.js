@@ -4,9 +4,9 @@ const { fillValuesNewWords } = require('./notion');
 const { bot } = require('./telegram');
 
 const app = express();
-
 const port = 8080; 
 
+app.set('timezone', 'Asia/Ho_Chi_Minh');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
