@@ -23,7 +23,7 @@ schedule.scheduleJob('0 */2 * * *', async () => {
     randomIndices.forEach((index) => {
         const randomWord = data[index];
         if (randomWord?.english && randomWord?.vietnamese && randomWord?.sound) {
-            message += `${++i}. ${randomWord.english}: ${randomWord.vietnamese} ✅\n`;
+            message += `${++i}. ${randomWord.english}: ${randomWord.vietnamese}\n`;
         }
     });
     bot.telegram.sendMessage(channelIdEnglish, message);
