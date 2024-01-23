@@ -30,7 +30,7 @@ schedule.scheduleJob('0 */2 * * *', async () => {
 });
 
 // 0 7 * * *
-schedule.scheduleJob('*/10 * * * * *', async () => {
+schedule.scheduleJob('0 7 * * *', async () => {
     const data = await findTodaySchedular();
 
     if(!data || data?.length === 0) {
